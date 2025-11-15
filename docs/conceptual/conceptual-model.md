@@ -64,3 +64,6 @@ The Inventory class manages stock levels for each product. It ensures that items
 
 The Address class represents shipping or billing addresses for users. It is required for successful order delivery. It stores street, city, postal code, country, and is associated with a specific user.
 
+## UML Class Diagram
+
+![Class Diagram](./pictures/Class%20Diagram.jpg)
