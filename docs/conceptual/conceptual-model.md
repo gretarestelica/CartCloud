@@ -66,3 +66,6 @@ The Address class represents shipping or billing addresses for users. It is requ
 
 ## UML Class Diagram
 
+![Class Diagram](conceptual/ClassDiagram.jpg)
+
+
