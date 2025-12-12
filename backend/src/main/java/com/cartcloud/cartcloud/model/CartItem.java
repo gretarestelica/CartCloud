@@ -2,22 +2,19 @@ package com.cartcloud.cartcloud.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cartItemId;
-
-    private int quantity;
-
-    private BigDecimal unitPrice;
-    private BigDecimal totalPrice;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "cart_id")
@@ -26,4 +23,8 @@ public class CartItem {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    private Integer quantity = 1;
+
+    private BigDecimal price; 
 }

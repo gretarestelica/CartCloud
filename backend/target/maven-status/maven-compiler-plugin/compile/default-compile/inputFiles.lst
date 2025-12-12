@@ -23,6 +23,9 @@ C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\Paymen
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\ProductRepository.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\ReviewRepository.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\UserRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\CartService.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\InventoryService.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\OrderService.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\PaymentService.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\ProductService.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\UserService.java

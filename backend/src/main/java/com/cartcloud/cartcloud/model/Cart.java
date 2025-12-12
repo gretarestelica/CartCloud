@@ -2,31 +2,28 @@ package com.cartcloud.cartcloud.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cart{
+public class Cart {
 
-  @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
-  private Long cartId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long cartId;
 
-  @OneToOne
-  @JoinColumn(name = "user_id")
-  private User user;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-  private BigDecimal tottalPrice;
+    private BigDecimal totalPrice = BigDecimal.ZERO;
 
-  @ManyToMany
-  @JoinTable(
-    name= "cart_products",
-    joinColumns= @JoinColumn(name = "cart_id"),
-    inverseJoinColumns= @JoinColumn(name = "product_id")
-  )
-
-  private List<Product> producrs;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> items = new ArrayList<>();
 }

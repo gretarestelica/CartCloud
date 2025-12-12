@@ -12,14 +12,17 @@ com\cartcloud\cartcloud\repository\CartRepository.class
 com\cartcloud\cartcloud\repository\PaymentRepository.class
 com\cartcloud\cartcloud\repository\ProductRepository.class
 com\cartcloud\cartcloud\model\Category.class
+com\cartcloud\cartcloud\service\PaymentService.class
 com\cartcloud\cartcloud\BackendApplication.class
 com\cartcloud\cartcloud\repository\UserRepository.class
+com\cartcloud\cartcloud\service\OrderService.class
 com\cartcloud\cartcloud\model\Review.class
 com\cartcloud\cartcloud\repository\InventoryRepository.class
 com\cartcloud\cartcloud\model\OrderItem.class
 com\cartcloud\cartcloud\model\Address.class
 com\cartcloud\cartcloud\repository\OrderItemRepository.class
 com\cartcloud\cartcloud\model\Order.class
+com\cartcloud\cartcloud\service\CartService.class
 com\cartcloud\cartcloud\controller\ProductController.class
 com\cartcloud\cartcloud\service\InventoryService.class
 com\cartcloud\cartcloud\model\User.class

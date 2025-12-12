@@ -2,11 +2,13 @@ package com.cartcloud.cartcloud.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Payment {
@@ -15,17 +17,15 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
-    private BigDecimal amount;
-
-   
-    private String method;
-
-   
-    private String status;
-
-    private LocalDateTime paymentDate;
-
     @OneToOne
     @JoinColumn(name = "order_id")
     private Order order;
+
+    private BigDecimal amount;
+
+    private String method;   
+    private String status;   
+
+    private String transactionId;
+    private LocalDateTime createdAt;
 }
