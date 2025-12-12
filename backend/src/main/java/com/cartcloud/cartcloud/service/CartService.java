@@ -89,7 +89,7 @@ public class CartService {
             .orElseThrow(() -> new RuntimeException("Cart not found"));     
   }
   @Transactional
-  public void cleanCart(Cart cart){
+  public void clearCart(Cart cart){
     cartItemRepository.deleteAll(cart.getItems());
     cart.getItems().clear();
     cartRepository.save(cart);

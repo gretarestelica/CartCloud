@@ -1,89 +1,108 @@
 package com.cartcloud.cartcloud.service;
 
 import com.cartcloud.cartcloud.model.*;
-import com.cartcloud.cartcloud.repository.*;
-
-import jakarta.transaction.Transaction;
-import jakarta.transaction.Transactional;
-
+import com.cartcloud.cartcloud.repository.OrderItemRepository;
+import com.cartcloud.cartcloud.repository.OrderRepository;
+import com.cartcloud.cartcloud.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-
-import javax.management.RuntimeErrorException;
 import java.util.List;
 
 @Service
 public class OrderService {
 
-   private final OrderRepository orderRepository;
-    private final CartRepository cartRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final CartService cartService;
+    private final InventoryService inventoryService;
+    private final PaymentService paymentService;
 
-  public OrderService(
-          OrderRepository orderRepository,
-          CartRepository cartRepository,
-          UserRepository userRepository,
-          CartService cartService
-
-  ){
-    this.orderRepository = orderRepository;
-    this.cartRepository = cartRepository;
-    this.userRepository = userRepository;
-    this.cartService = cartService;
-  }
-
-  @Transactional
-  public Order placeOrder(Long userId) {
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-    Cart cart = cartRepository.findByUser(user)
-           .orElseThrow(() -> new RuntimeException("Cart not found"));
-           
-    if(cart.getItems().isEmpty()) {
-      throw new RuntimeException("Cart is empty");
-    }       
-
-    Order order = new Order();
-    order.setUser(user);
-    order.setOrderDate(LocalDateTime.now());
-    order.setStatus("CREATED");
-
-   List<OrderItem> orderItems = new ArrayList<>();
-    BigDecimal total = BigDecimal.ZERO;
-
-
-    for (CartItem ci : cart.getItems()) {
-      OrderItem oi = new OrderItem();
-      oi.setOrder(order);
-      oi.setProduct(ci.getProduct());
-      oi.setQuantity(ci.getQuantity());
-      oi.setPrice(ci.getProduct().getPrice());
-
-      total = total.add(
-               ci.getProduct(). getPrice()
-                     .multiply(BigDecimal.valueOf(ci.getQuantity()))
-      );
-
-      orderItems.add(oi);
+    public OrderService(OrderRepository orderRepository,
+                        OrderItemRepository orderItemRepository,
+                        UserRepository userRepository,
+                        CartService cartService,
+                        InventoryService inventoryService,
+                        PaymentService paymentService) {
+        this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.userRepository = userRepository;
+        this.cartService = cartService;
+        this.inventoryService = inventoryService;
+        this.paymentService = paymentService;
     }
 
-    order.setItems(orderItems);
-    order.setTotalPrice(total);
+    @Transactional
+    public Order checkout(Long userId, String paymentMethod) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    Order savedOrder = orderRepository.save(order);
+        Cart cart = cartService.getCartForUser(userId);
 
-    cartService.cleanCart(cart);
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
+        }
 
-    return savedOrder;
-  }
+       
+        for (CartItem item : cart.getItems()) {
+            if (!inventoryService.hasSufficientStock(item.getProduct(), item.getQuantity())) {
+                throw new RuntimeException("Not enough stock for product: " + item.getProduct().getName());
+            }
+        }
 
-  public List<Order> getOrderForUser(Long userId) {
-    return orderRepository.findByUserUserId(userId);
-  }
-  
+        
+        Order order = new Order();
+        order.setUser(user);
+        order.setCreatedAt(LocalDateTime.now());
+        order.setStatus("PENDING");
+        order.setOrderItems(new ArrayList<OrderItem>());
+
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        order = orderRepository.save(order);
+
+        for (CartItem cartItem : cart.getItems()) {
+            OrderItem oi = new OrderItem();
+            oi.setOrder(order);
+            oi.setProduct(cartItem.getProduct());
+            oi.setQuantity(cartItem.getQuantity());
+            oi.setUnitPrice(cartItem.getProduct().getPrice());
+
+            BigDecimal lineTotal = cartItem.getProduct().getPrice()
+                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+
+            oi.setLineTotal(lineTotal);
+            total = total.add(lineTotal);
+
+            orderItemRepository.save(oi);
+            order.getOrderItems().add(oi);
+
+            inventoryService.decreaseStock(cartItem.getProduct(), cartItem.getQuantity());
+        }
+
+        order.setTotalAmount(total);
+        order = orderRepository.save(order);
+
+        Payment payment = paymentService.processPayment(order, paymentMethod);
+        order.setPayment(payment);
+        order.setStatus("COMPLETED");
+
+        order = orderRepository.save(order);
+
+        cartService.clearCart(cart);
+
+        return order;
+    }
+
+    public List<Order> getOrdersForUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return orderRepository.findByUser(user);
+    }
 }

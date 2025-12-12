@@ -21,7 +21,7 @@ public class PaymentService {
     public Payment processPayment(Order order, String paymentMethod) {
         Payment payment = new Payment();
         payment.setOrder(order);
-        payment.setAmount(order.getTotalPrice());
+        payment.setAmount(order.getTotalAmount());
         payment.setMethod(paymentMethod);
         payment.setStatus("SUCCESS");
         payment.setTransactionId(UUID.randomUUID().toString());

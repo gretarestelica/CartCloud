@@ -2,10 +2,9 @@ package com.cartcloud.cartcloud.repository;
 
 import com.cartcloud.cartcloud.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface UserRepository extends JpaRepository<User, Long>{
+import java.util.Optional;
 
-  boolean existsByEmail(String email);
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
 }

@@ -6,8 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItem {
@@ -24,7 +23,9 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    private Integer quantity;
+    private int quantity;
 
-    private BigDecimal price;
+    private BigDecimal unitPrice;
+
+    private BigDecimal lineTotal;
 }
