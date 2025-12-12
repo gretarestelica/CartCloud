@@ -1,3 +1,6 @@
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\BackendApplication.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\controller\ProductController.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\controller\UserController.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\model\Address.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\model\Cart.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\model\CartItem.java
@@ -9,3 +12,17 @@ C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\model\Payment.jav
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\model\Product.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\model\Review.java
 C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\model\User.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\AddressRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\CartItemRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\CartRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\CategoryRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\InventoryRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\OrderItemRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\OrderRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\PaymentRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\ProductRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\ReviewRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\repository\UserRepository.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\InventoryService.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\ProductService.java
+C:\Dev\CartCloud\backend\src\main\java\com\cartcloud\cartcloud\service\UserService.java
