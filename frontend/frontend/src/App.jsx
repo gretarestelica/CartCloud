@@ -17,7 +17,13 @@ function App() {
   const [cart, setCart] = useState({ items: [], totalPrice: 0 });
   const [lastOrder, setLastOrder] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState('');
+  const [cartLoading, setCartLoading] = useState(false);
+  const [cartError, setCartError] = useState('');
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState('');
   const [message, setMessage] = useState('');
   const [showCart, setShowCart] = useState(false);
   const [search, setSearch] = useState('');
@@ -58,15 +64,17 @@ function App() {
     const bootstrap = async () => {
       try {
         const ensuredUser = await ensureUser();
-        await loadProducts();
-        await loadCategories();
-        await loadCart(ensuredUser);
-        await loadOrders(ensuredUser);
+        await Promise.all([
+          loadProducts(),
+          loadCategories(),
+          loadCart(ensuredUser),
+          loadOrders(ensuredUser),
+        ]);
       } catch (err) {
         console.error(err);
         setMessage('Nuk u inicializua frontendi: ' + err.message);
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     };
     bootstrap();
@@ -122,11 +130,14 @@ function App() {
   };
 
   const loadProducts = async () => {
+    setProductsLoading(true);
+    setProductsError('');
     try {
       const data = await apiRequest('/products');
       setProducts(data);
     } catch (err) {
       console.warn('Ska produkte nga API, po shfaqim shembull', err);
+      setProductsError('Nuk u arrit të ngarkohen produktet. Po shfaqim disa shembuj.');
       setProducts([
         {
           productId: 1,
@@ -147,6 +158,8 @@ function App() {
           category: { name: 'Aksesore' },
         },
       ]);
+    } finally {
+      setProductsLoading(false);
     }
   };
 
@@ -169,29 +182,40 @@ function App() {
 
   const loadCart = async (currentUser = user) => {
     if (!currentUser) return;
+    setCartLoading(true);
+    setCartError('');
     try {
       const data = await apiRequest(`/cart/${currentUser.userId}`);
       setCart(data);
     } catch (err) {
       console.warn('Cart fallback to empty', err);
+      setCartError('Nuk u arrit të ngarkohet shporta. Po shfaqim një shportë bosh.');
       setCart({ items: [], totalPrice: 0 });
+    } finally {
+      setCartLoading(false);
     }
   };
 
   const loadOrders = async (currentUser = user) => {
     if (!currentUser) return;
+    setOrdersLoading(true);
+    setOrdersError('');
     try {
       const data = await apiRequest(`/orders/user/${currentUser.userId}`);
       setOrders(data);
     } catch (err) {
       console.warn('Ska porosi ende', err);
+      setOrdersError('Nuk u arrit të ngarkohen porositë.');
       setOrders([]);
+    } finally {
+      setOrdersLoading(false);
     }
   };
 
   const handleAddToCart = async (productId) => {
     if (!user) return;
     try {
+      setCartLoading(true);
       const updated = await apiRequest(`/cart/${user.userId}/items?productId=${productId}&quantity=1`, {
         method: 'POST',
       });
@@ -200,16 +224,23 @@ function App() {
       setShowCart(true);
     } catch (err) {
       setMessage('Shtimi në shportë dështoi: ' + err.message);
+      setCartError('Shtimi në shportë dështoi: ' + err.message);
+    } finally {
+      setCartLoading(false);
     }
   };
 
   const handleRemoveItem = async (itemId) => {
     if (!user) return;
     try {
+      setCartLoading(true);
       const updated = await apiRequest(`/cart/${user.userId}/items/${itemId}`, { method: 'DELETE' });
       setCart(updated);
     } catch (err) {
       setMessage('Heqja dështoi: ' + err.message);
+      setCartError('Heqja e artikullit dështoi: ' + err.message);
+    } finally {
+      setCartLoading(false);
     }
   };
 
@@ -229,6 +260,7 @@ function App() {
     }
     try {
       setCheckoutServerError('');
+      setCartLoading(true);
       const order = await apiRequest(
         `/orders/checkout?userId=${user.userId}&paymentMethod=${checkoutForm.paymentMethod}`,
         {
@@ -241,6 +273,8 @@ function App() {
       setMessage('Porosia u finalizua me sukses.');
     } catch (err) {
       setCheckoutServerError(err.message);
+    } finally {
+      setCartLoading(false);
     }
   };
 
@@ -375,6 +409,16 @@ function App() {
               </button>
             </div>
             {message && <div className="toast">{message}</div>}
+            {initialLoading && (
+              <div className="banner loading" aria-live="polite">
+                Po ngarkojmë të dhënat kryesore...
+              </div>
+            )}
+            {productsError && (
+              <div className="banner error" role="alert">
+                {productsError}
+              </div>
+            )}
           </div>
           <div className="hero-card">
             <div className="stat">
@@ -417,11 +461,22 @@ function App() {
             </section>
 
             <section className="grid" aria-label="Lista e produkteve">
-              {loading && <div className="empty">Duke ngarkuar...</div>}
-              {!loading && filteredProducts.length === 0 && (
+              {productsLoading &&
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <article key={idx} className="card skeleton">
+                    <div className="image shimmer" />
+                    <div className="card-body">
+                      <div className="skeleton-line w-60" />
+                      <div className="skeleton-line w-40" />
+                      <div className="skeleton-line w-80" />
+                    </div>
+                  </article>
+                ))}
+              {!productsLoading && filteredProducts.length === 0 && (
                 <div className="empty">Asnjë produkt</div>
               )}
-              {filteredProducts.map((product) => (
+              {!productsLoading &&
+                filteredProducts.map((product) => (
                 <article key={product.productId} className="card">
                   <div
                     className="image"
@@ -458,7 +513,17 @@ function App() {
         {activeSection === 'orders' && (
           <section className="panel" aria-label="Porositë e mia">
             <h2>Porositë e mia</h2>
-            {orders.length === 0 && <div className="empty">Nuk ka porosi ende.</div>}
+            {ordersLoading && (
+              <div className="empty">Duke ngarkuar porositë...</div>
+            )}
+            {ordersError && !ordersLoading && (
+              <div className="banner error" role="alert">
+                {ordersError}
+              </div>
+            )}
+            {orders.length === 0 && !ordersLoading && (
+              <div className="empty">Nuk ka porosi ende.</div>
+            )}
             <div className="orders-list">
               {orders.map((order) => (
                 <article key={order.orderId} className="order-card">
@@ -625,7 +690,15 @@ function App() {
           </button>
         </header>
         <div className="cart-items">
-          {cart.items && cart.items.length > 0 ? (
+          {cartLoading && (
+            <div className="empty">Duke përditësuar shportën...</div>
+          )}
+          {cartError && !cartLoading && (
+            <div className="banner error" role="alert">
+              {cartError}
+            </div>
+          )}
+          {cart.items && cart.items.length > 0 && !cartLoading ? (
             cart.items.map((item) => (
               <div key={item.id} className="cart-row">
                 <div>
@@ -642,9 +715,9 @@ function App() {
                 </div>
               </div>
             ))
-          ) : (
+          ) : !cartLoading ? (
             <div className="empty">Shporta është bosh</div>
-          )}
+          ) : null}
         </div>
         <div className="cart-footer">
           <div>
