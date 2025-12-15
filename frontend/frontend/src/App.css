@@ -5,6 +5,21 @@
   padding: 1rem 1.25rem 3rem;
 }
 
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0.5rem;
+  background: #0f172a;
+  color: #f9fafb;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  z-index: 50;
+}
+
+.skip-link:focus-visible {
+  left: 1rem;
+}
+
 .topbar {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
@@ -92,6 +107,11 @@ button {
 button:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 36px rgba(37, 99, 235, 0.25);
+}
+
+button:focus-visible {
+  outline: 3px solid #f97316;
+  outline-offset: 2px;
 }
 
 button.ghost {

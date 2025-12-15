@@ -298,7 +298,10 @@ function App() {
 
   return (
     <div className="page">
-      <header className="topbar">
+      <a href="#main-content" className="skip-link">
+        Kalo te përmbajtja kryesore
+      </a>
+      <header className="topbar" role="banner">
         <div className="brand">
           <span className="brand-mark">☁️</span>
           <div>
@@ -312,30 +315,42 @@ function App() {
             placeholder="Kërko produkt..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            aria-label="Kërko produkte"
           />
         </div>
         <div className="actions">
-          <div className="tabs">
+          <div className="tabs" role="tablist" aria-label="Navigimi i seksioneve">
             <button
               className={activeSection === 'products' ? 'ghost tab active' : 'ghost tab'}
               onClick={() => setActiveSection('products')}
+              role="tab"
+              aria-selected={activeSection === 'products'}
             >
               Produkte
             </button>
             <button
               className={activeSection === 'orders' ? 'ghost tab active' : 'ghost tab'}
               onClick={() => setActiveSection('orders')}
+              role="tab"
+              aria-selected={activeSection === 'orders'}
             >
               Porositë
             </button>
             <button
               className={activeSection === 'profile' ? 'ghost tab active' : 'ghost tab'}
               onClick={() => setActiveSection('profile')}
+              role="tab"
+              aria-selected={activeSection === 'profile'}
             >
               Profili
             </button>
           </div>
-          <button className="ghost" onClick={() => setShowCart((v) => !v)}>
+          <button
+            className="ghost"
+            onClick={() => setShowCart((v) => !v)}
+            aria-pressed={showCart}
+            aria-label="Hape ose mbyll shportën"
+          >
             Shporta ({cart.items?.length || 0})
           </button>
           <div className="user-chip">
@@ -344,7 +359,7 @@ function App() {
         </div>
       </header>
 
-      <main>
+      <main id="main-content" role="main">
         <section className="hero">
           <div>
             <p className="eyebrow">E-commerce • Dynamic</p>
@@ -380,7 +395,10 @@ function App() {
         </section>
         {activeSection === 'products' && (
           <>
-            <section className="filters">
+            <section
+              className="filters"
+              aria-label="Filtra të kategorive"
+            >
               {categories.map((c) => (
                 <button
                   key={c.name || c.categoryName || c.nam}
@@ -398,7 +416,7 @@ function App() {
               ))}
             </section>
 
-            <section className="grid">
+            <section className="grid" aria-label="Lista e produkteve">
               {loading && <div className="empty">Duke ngarkuar...</div>}
               {!loading && filteredProducts.length === 0 && (
                 <div className="empty">Asnjë produkt</div>
@@ -438,7 +456,7 @@ function App() {
         )}
 
         {activeSection === 'orders' && (
-          <section className="panel">
+          <section className="panel" aria-label="Porositë e mia">
             <h2>Porositë e mia</h2>
             {orders.length === 0 && <div className="empty">Nuk ka porosi ende.</div>}
             <div className="orders-list">
@@ -473,7 +491,7 @@ function App() {
         )}
 
         {activeSection === 'profile' && (
-          <section className="panel">
+          <section className="panel" aria-label="Profili dhe autentikimi">
             <h2>Profili i përdoruesit</h2>
             <div className="profile-grid">
               <div>
@@ -481,53 +499,70 @@ function App() {
                 <form className="form" onSubmit={handleAuthSubmit} noValidate>
                   {authMode === 'register' && (
                     <div className="field">
-                      <label>
+                      <label htmlFor="auth-name">
                         Emri <span className="required">*</span>
                       </label>
                       <input
+                        id="auth-name"
                         type="text"
                         value={authForm.name}
                         onChange={(e) =>
                           setAuthForm((f) => ({ ...f, name: e.target.value }))
                         }
+                        aria-invalid={Boolean(authErrors.name)}
+                        aria-describedby={authErrors.name ? 'auth-name-error' : undefined}
                       />
                       {authErrors.name && (
-                        <div className="field-error">{authErrors.name}</div>
+                        <div id="auth-name-error" className="field-error">
+                          {authErrors.name}
+                        </div>
                       )}
                     </div>
                   )}
                   <div className="field">
-                    <label>
+                    <label htmlFor="auth-email">
                       Email <span className="required">*</span>
                     </label>
                     <input
+                      id="auth-email"
                       type="email"
                       value={authForm.email}
                       onChange={(e) =>
                         setAuthForm((f) => ({ ...f, email: e.target.value }))
                       }
+                      aria-invalid={Boolean(authErrors.email)}
+                      aria-describedby={authErrors.email ? 'auth-email-error' : undefined}
                     />
                     {authErrors.email && (
-                      <div className="field-error">{authErrors.email}</div>
+                      <div id="auth-email-error" className="field-error">
+                        {authErrors.email}
+                      </div>
                     )}
                   </div>
                   <div className="field">
-                    <label>
+                    <label htmlFor="auth-password">
                       Fjalëkalimi <span className="required">*</span>
                     </label>
                     <input
+                      id="auth-password"
                       type="password"
                       value={authForm.password}
                       onChange={(e) =>
                         setAuthForm((f) => ({ ...f, password: e.target.value }))
                       }
+                      aria-invalid={Boolean(authErrors.password)}
+                      aria-describedby={authErrors.password ? 'auth-password-error' : undefined}
                     />
                     {authErrors.password && (
-                      <div className="field-error">{authErrors.password}</div>
+                      <div id="auth-password-error" className="field-error">
+                        {authErrors.password}
+                      </div>
                     )}
                   </div>
                   {authServerError && (
-                    <div className="form-error">{authServerError}</div>
+                    <div className="form-error" role="alert">
+                      {authServerError}
+                    </div>
                   )}
                   <div className="form-actions">
                     <button type="submit">
@@ -577,9 +612,14 @@ function App() {
         )}
       </main>
 
-      <aside className={showCart ? 'cart open' : 'cart'}>
+      <aside
+        className={showCart ? 'cart open' : 'cart'}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-title"
+      >
         <header>
-          <h2>Shporta</h2>
+          <h2 id="cart-title">Shporta</h2>
           <button className="ghost" onClick={() => setShowCart(false)}>
             Mbyll
           </button>
@@ -618,57 +658,73 @@ function App() {
             Finalizo porosinë
           </button>
         </div>
-        <div className="checkout-form">
+        <div className="checkout-form" aria-label="Detajet e dërgesës">
           <h3>Detajet e dërgesës</h3>
           <div className="field">
-            <label>
+            <label htmlFor="checkout-name">
               Emri i marrësit <span className="required">*</span>
             </label>
             <input
+              id="checkout-name"
               type="text"
               value={checkoutForm.name}
               onChange={(e) =>
                 setCheckoutForm((f) => ({ ...f, name: e.target.value }))
               }
+              aria-invalid={Boolean(checkoutErrors.name)}
+              aria-describedby={checkoutErrors.name ? 'checkout-name-error' : undefined}
             />
             {checkoutErrors.name && (
-              <div className="field-error">{checkoutErrors.name}</div>
+              <div id="checkout-name-error" className="field-error">
+                {checkoutErrors.name}
+              </div>
             )}
           </div>
           <div className="field">
-            <label>
+            <label htmlFor="checkout-street">
               Rruga <span className="required">*</span>
             </label>
             <input
+              id="checkout-street"
               type="text"
               value={checkoutForm.street}
               onChange={(e) =>
                 setCheckoutForm((f) => ({ ...f, street: e.target.value }))
               }
+              aria-invalid={Boolean(checkoutErrors.street)}
+              aria-describedby={checkoutErrors.street ? 'checkout-street-error' : undefined}
             />
             {checkoutErrors.street && (
-              <div className="field-error">{checkoutErrors.street}</div>
+              <div id="checkout-street-error" className="field-error">
+                {checkoutErrors.street}
+              </div>
             )}
           </div>
           <div className="field">
-            <label>
+            <label htmlFor="checkout-city">
               Qyteti <span className="required">*</span>
             </label>
             <input
+              id="checkout-city"
               type="text"
               value={checkoutForm.city}
               onChange={(e) =>
                 setCheckoutForm((f) => ({ ...f, city: e.target.value }))
               }
+              aria-invalid={Boolean(checkoutErrors.city)}
+              aria-describedby={checkoutErrors.city ? 'checkout-city-error' : undefined}
             />
             {checkoutErrors.city && (
-              <div className="field-error">{checkoutErrors.city}</div>
+              <div id="checkout-city-error" className="field-error">
+                {checkoutErrors.city}
+              </div>
             )}
           </div>
           <div className="field-row">
             <div className="field">
-              <label>Shteti</label>
+              <label htmlFor="checkout-state">Shteti</label>
               <input
+                id="checkout-state"
                 type="text"
                 value={checkoutForm.state}
                 onChange={(e) =>
@@ -677,42 +733,57 @@ function App() {
               />
             </div>
             <div className="field">
-              <label>
+              <label htmlFor="checkout-country">
                 Vendi <span className="required">*</span>
               </label>
               <input
+                id="checkout-country"
                 type="text"
                 value={checkoutForm.country}
                 onChange={(e) =>
                   setCheckoutForm((f) => ({ ...f, country: e.target.value }))
                 }
+                aria-invalid={Boolean(checkoutErrors.country)}
+                aria-describedby={
+                  checkoutErrors.country ? 'checkout-country-error' : undefined
+                }
               />
               {checkoutErrors.country && (
-                <div className="field-error">{checkoutErrors.country}</div>
+                <div id="checkout-country-error" className="field-error">
+                  {checkoutErrors.country}
+                </div>
               )}
             </div>
           </div>
           <div className="field-row">
             <div className="field">
-              <label>
+              <label htmlFor="checkout-postal">
                 Kodi postar <span className="required">*</span>
               </label>
               <input
+                id="checkout-postal"
                 type="text"
                 value={checkoutForm.postalCode}
                 onChange={(e) =>
                   setCheckoutForm((f) => ({ ...f, postalCode: e.target.value }))
                 }
+                aria-invalid={Boolean(checkoutErrors.postalCode)}
+                aria-describedby={
+                  checkoutErrors.postalCode ? 'checkout-postal-error' : undefined
+                }
               />
               {checkoutErrors.postalCode && (
-                <div className="field-error">{checkoutErrors.postalCode}</div>
+                <div id="checkout-postal-error" className="field-error">
+                  {checkoutErrors.postalCode}
+                </div>
               )}
             </div>
             <div className="field">
-              <label>
+              <label htmlFor="checkout-payment">
                 Metoda e pagesës <span className="required">*</span>
               </label>
               <select
+                id="checkout-payment"
                 value={checkoutForm.paymentMethod}
                 onChange={(e) =>
                   setCheckoutForm((f) => ({
@@ -720,17 +791,25 @@ function App() {
                     paymentMethod: e.target.value,
                   }))
                 }
+                aria-invalid={Boolean(checkoutErrors.paymentMethod)}
+                aria-describedby={
+                  checkoutErrors.paymentMethod ? 'checkout-payment-error' : undefined
+                }
               >
                 <option value="CARD">Kartë</option>
                 <option value="CASH_ON_DELIVERY">Kesh në dorëzim</option>
               </select>
               {checkoutErrors.paymentMethod && (
-                <div className="field-error">{checkoutErrors.paymentMethod}</div>
+                <div id="checkout-payment-error" className="field-error">
+                  {checkoutErrors.paymentMethod}
+                </div>
               )}
             </div>
           </div>
           {checkoutServerError && (
-            <div className="form-error">{checkoutServerError}</div>
+            <div className="form-error" role="alert">
+              {checkoutServerError}
+            </div>
           )}
         </div>
       </aside>
