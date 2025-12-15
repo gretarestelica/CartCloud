@@ -28,7 +28,7 @@ function App() {
   const [showCart, setShowCart] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [activeSection, setActiveSection] = useState('products'); // products | orders | profile
+  const [activeSection, setActiveSection] = useState('products'); // products | orders | profile | tryon
   const [authMode, setAuthMode] = useState('login'); // login | register
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' });
   const [authErrors, setAuthErrors] = useState({});
@@ -49,6 +49,12 @@ function App() {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [wishlistError, setWishlistError] = useState('');
   const [socialEvents, setSocialEvents] = useState([]);
+  const [tryOnPhoto, setTryOnPhoto] = useState('');
+  const [tryOnProductId, setTryOnProductId] = useState(null);
+  const [tryOnScale, setTryOnScale] = useState(1);
+  const [tryOnRotate, setTryOnRotate] = useState(0);
+  const [tryOnOffsetX, setTryOnOffsetX] = useState(0);
+  const [tryOnOffsetY, setTryOnOffsetY] = useState(0);
 
   const filteredProducts = useMemo(() => {
     const term = search.toLowerCase();
@@ -84,6 +90,12 @@ function App() {
     };
     bootstrap();
   }, []);
+
+  useEffect(() => {
+    if (!tryOnProductId && products.length > 0) {
+      setTryOnProductId(products[0].productId);
+    }
+  }, [products, tryOnProductId]);
 
   useEffect(() => {
     const names = ['Arben', 'Elira', 'Kujtim', 'Sara', 'Blerina', 'Gent'];
@@ -428,6 +440,14 @@ function App() {
             >
               Profili
             </button>
+            <button
+              className={activeSection === 'tryon' ? 'ghost tab active' : 'ghost tab'}
+              onClick={() => setActiveSection('tryon')}
+              role="tab"
+              aria-selected={activeSection === 'tryon'}
+            >
+              2D Try‑On
+            </button>
           </div>
           <button
             className="ghost"
@@ -722,6 +742,136 @@ function App() {
                 ) : (
                   <div className="empty">Nuk ka përdorues aktiv.</div>
                 )}
+              </div>
+            </div>
+          </section>
+        )}
+        {activeSection === 'tryon' && (
+          <section className="panel" aria-label="2D Try-On">
+            <h2>Provo produktin në foto (2D)</h2>
+            <p className="muted">
+              Ngarko një selfie dhe rregullo pozicionin e produktit (p.sh. syze, kapelë) me
+              slider-at më poshtë.
+            </p>
+            <div className="tryon-grid">
+              <div className="tryon-left">
+                <div className="field">
+                  <label htmlFor="tryon-photo">Foto (selfie)</label>
+                  <input
+                    id="tryon-photo"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setTryOnPhoto(ev.target?.result?.toString() || '');
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="tryon-product">Produkt për overlay</label>
+                  <select
+                    id="tryon-product"
+                    value={tryOnProductId || ''}
+                    onChange={(e) => setTryOnProductId(Number(e.target.value))}
+                  >
+                    {products.map((p) => (
+                      <option key={p.productId} value={p.productId}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field">
+                  <label htmlFor="tryon-scale">Madhësia</label>
+                  <input
+                    id="tryon-scale"
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.05"
+                    value={tryOnScale}
+                    onChange={(e) => setTryOnScale(Number(e.target.value))}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="tryon-rotate">Rotacioni</label>
+                  <input
+                    id="tryon-rotate"
+                    type="range"
+                    min="-30"
+                    max="30"
+                    step="1"
+                    value={tryOnRotate}
+                    onChange={(e) => setTryOnRotate(Number(e.target.value))}
+                  />
+                </div>
+                <div className="field-row">
+                  <div className="field">
+                    <label htmlFor="tryon-offset-x">Offset X</label>
+                    <input
+                      id="tryon-offset-x"
+                      type="range"
+                      min="-100"
+                      max="100"
+                      step="2"
+                      value={tryOnOffsetX}
+                      onChange={(e) => setTryOnOffsetX(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="tryon-offset-y">Offset Y</label>
+                    <input
+                      id="tryon-offset-y"
+                      type="range"
+                      min="-100"
+                      max="100"
+                      step="2"
+                      value={tryOnOffsetY}
+                      onChange={(e) => setTryOnOffsetY(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="tryon-right">
+                <div className="tryon-stage">
+                  {tryOnPhoto ? (
+                    <>
+                      <img
+                        src={tryOnPhoto}
+                        alt="Selfie për try-on"
+                        className="tryon-photo"
+                      />
+                      {(() => {
+                        const product = products.find(
+                          (p) => p.productId === tryOnProductId,
+                        );
+                        if (!product) return null;
+                        const overlaySrc =
+                          product.imageUrl ||
+                          'https://images.unsplash.com/photo-1516478177764-9fe5bdc5aff3?auto=format&fit=crop&w=400&q=70';
+                        return (
+                          <img
+                            src={overlaySrc}
+                            alt={product.name}
+                            className="tryon-overlay"
+                            style={{
+                              transform: `translate(${tryOnOffsetX}px, ${tryOnOffsetY}px) scale(${tryOnScale}) rotate(${tryOnRotate}deg)`,
+                            }}
+                          />
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <div className="empty">
+                      Ngarko një foto për të parë overlay-n e produktit.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>
