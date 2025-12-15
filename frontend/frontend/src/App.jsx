@@ -48,6 +48,7 @@ function App() {
   const [wishlistLink, setWishlistLink] = useState('');
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [wishlistError, setWishlistError] = useState('');
+  const [socialEvents, setSocialEvents] = useState([]);
 
   const filteredProducts = useMemo(() => {
     const term = search.toLowerCase();
@@ -83,6 +84,32 @@ function App() {
     };
     bootstrap();
   }, []);
+
+  useEffect(() => {
+    const names = ['Arben', 'Elira', 'Kujtim', 'Sara', 'Blerina', 'Gent'];
+    const cities = ['Prishtinë', 'Tiranë', 'Tetovë', 'Shkup', 'Durres', 'Gjakovë'];
+
+    const timer = setInterval(() => {
+      if (products.length === 0) return;
+      const product = products[Math.floor(Math.random() * products.length)];
+      const name = names[Math.floor(Math.random() * names.length)];
+      const city = cities[Math.floor(Math.random() * cities.length)];
+      const qty = Math.random() > 0.7 ? 2 : 1;
+
+      const event = {
+        id: Date.now(),
+        message: `${name} nga ${city} sapo bleu ${qty}x ${product.name}`,
+      };
+
+      setSocialEvents((prev) => [...prev.slice(-3), event]);
+
+      setTimeout(() => {
+        setSocialEvents((prev) => prev.filter((e) => e.id !== event.id));
+      }, 8000);
+    }, 20000);
+
+    return () => clearInterval(timer);
+  }, [products]);
 
   const apiRequest = async (path, options = {}) => {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -1002,6 +1029,16 @@ function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {socialEvents.length > 0 && (
+        <div className="social-toast-container" aria-live="polite">
+          {socialEvents.map((e) => (
+            <div key={e.id} className="social-toast">
+              <span className="dot" />
+              <span>{e.message}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -601,6 +601,47 @@ main {
   gap: 0.5rem;
 }
 
+.social-toast-container {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  display: grid;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.social-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  padding: 0.6rem 0.9rem;
+  border-radius: 999px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.5);
+  font-size: 0.9rem;
+  animation: toast-in 0.25s ease-out;
+}
+
+.social-toast .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 1024px) {
   .topbar {
     grid-template-columns: 1fr;
