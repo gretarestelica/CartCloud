@@ -23,6 +23,21 @@ function App() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [activeSection, setActiveSection] = useState('products'); // products | orders | profile
+  const [authMode, setAuthMode] = useState('login'); // login | register
+  const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' });
+  const [authErrors, setAuthErrors] = useState({});
+  const [authServerError, setAuthServerError] = useState('');
+  const [checkoutForm, setCheckoutForm] = useState({
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: '',
+    paymentMethod: 'CARD',
+  });
+  const [checkoutErrors, setCheckoutErrors] = useState({});
+  const [checkoutServerError, setCheckoutServerError] = useState('');
 
   const filteredProducts = useMemo(() => {
     const term = search.toLowerCase();
@@ -62,11 +77,17 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       ...options,
     });
+    const text = await res.text();
+    const isJson = text && (text.startsWith('{') || text.startsWith('['));
+    const data = text ? (isJson ? JSON.parse(text) : text) : null;
     if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(errorText || res.statusText);
+      const message =
+        typeof data === 'string'
+          ? data
+          : data?.message || data?.error || res.statusText || 'Kërkesa dështoi';
+      throw new Error(message);
     }
-    return res.status === 204 ? null : res.json();
+    return data;
   };
 
   const ensureUser = async () => {
@@ -194,16 +215,84 @@ function App() {
 
   const handleCheckout = async () => {
     if (!user) return;
+    const errs = {};
+    if (!checkoutForm.name.trim()) errs.name = 'Emri është i detyrueshëm';
+    if (!checkoutForm.street.trim()) errs.street = 'Rruga është e detyrueshme';
+    if (!checkoutForm.city.trim()) errs.city = 'Qyteti është i detyrueshëm';
+    if (!checkoutForm.country.trim()) errs.country = 'Shteti është i detyrueshëm';
+    if (!checkoutForm.postalCode.trim()) errs.postalCode = 'Kodi postar është i detyrueshëm';
+    if (!checkoutForm.paymentMethod) errs.paymentMethod = 'Zgjidh një metodë pagese';
+    setCheckoutErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setCheckoutServerError('Plotëso fushat e detyrueshme përpara se të vazhdosh.');
+      return;
+    }
     try {
-      const order = await apiRequest(`/orders/checkout?userId=${user.userId}&paymentMethod=CARD`, {
-        method: 'POST',
-      });
+      setCheckoutServerError('');
+      const order = await apiRequest(
+        `/orders/checkout?userId=${user.userId}&paymentMethod=${checkoutForm.paymentMethod}`,
+        {
+          method: 'POST',
+        },
+      );
       setLastOrder(order);
       await loadCart(user);
       await loadOrders(user);
       setMessage('Porosia u finalizua me sukses.');
     } catch (err) {
-      setMessage('Checkout dështoi: ' + err.message);
+      setCheckoutServerError(err.message);
+    }
+  };
+
+  const validateEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toLowerCase());
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    const errs = {};
+    if (!authForm.email.trim()) errs.email = 'Email është i detyrueshëm';
+    else if (!validateEmail(authForm.email)) errs.email = 'Email nuk është i vlefshëm';
+
+    if (!authForm.password.trim()) errs.password = 'Fjalëkalimi është i detyrueshëm';
+    else if (authForm.password.length < 6)
+      errs.password = 'Fjalëkalimi duhet të ketë të paktën 6 karaktere';
+
+    if (authMode === 'register') {
+      if (!authForm.name.trim()) errs.name = 'Emri është i detyrueshëm';
+    }
+
+    setAuthErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    try {
+      setAuthServerError('');
+      if (authMode === 'login') {
+        const loggedIn = await apiRequest('/users/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: authForm.email,
+            password: authForm.password,
+          }),
+        });
+        setUser(loggedIn);
+        localStorage.setItem('cartcloudUser', JSON.stringify(loggedIn));
+      } else {
+        const created = await apiRequest('/users', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: authForm.name,
+            email: authForm.email,
+            password: authForm.password,
+            role: 'CUSTOMER',
+          }),
+        });
+        setUser(created);
+        localStorage.setItem('cartcloudUser', JSON.stringify(created));
+        setAuthMode('login');
+      }
+      setMessage('Përdoruesi u autentikua me sukses.');
+    } catch (err) {
+      setAuthServerError(err.message);
     }
   };
 
@@ -386,28 +475,104 @@ function App() {
         {activeSection === 'profile' && (
           <section className="panel">
             <h2>Profili i përdoruesit</h2>
-            {user ? (
-              <>
-                <div className="profile-row">
-                  <span className="muted">Emri</span>
-                  <span>{user.name}</span>
-                </div>
-                <div className="profile-row">
-                  <span className="muted">Email</span>
-                  <span>{user.email}</span>
-                </div>
-                <div className="profile-row">
-                  <span className="muted">Roli</span>
-                  <span>{user.role}</span>
-                </div>
-                <div className="profile-row">
-                  <span className="muted">Statusi</span>
-                  <span>{user.accountStatus}</span>
-                </div>
-              </>
-            ) : (
-              <div className="empty">Nuk ka përdorues aktiv.</div>
-            )}
+            <div className="profile-grid">
+              <div>
+                <h3>Kredencialet</h3>
+                <form className="form" onSubmit={handleAuthSubmit} noValidate>
+                  {authMode === 'register' && (
+                    <div className="field">
+                      <label>
+                        Emri <span className="required">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={authForm.name}
+                        onChange={(e) =>
+                          setAuthForm((f) => ({ ...f, name: e.target.value }))
+                        }
+                      />
+                      {authErrors.name && (
+                        <div className="field-error">{authErrors.name}</div>
+                      )}
+                    </div>
+                  )}
+                  <div className="field">
+                    <label>
+                      Email <span className="required">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={authForm.email}
+                      onChange={(e) =>
+                        setAuthForm((f) => ({ ...f, email: e.target.value }))
+                      }
+                    />
+                    {authErrors.email && (
+                      <div className="field-error">{authErrors.email}</div>
+                    )}
+                  </div>
+                  <div className="field">
+                    <label>
+                      Fjalëkalimi <span className="required">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      value={authForm.password}
+                      onChange={(e) =>
+                        setAuthForm((f) => ({ ...f, password: e.target.value }))
+                      }
+                    />
+                    {authErrors.password && (
+                      <div className="field-error">{authErrors.password}</div>
+                    )}
+                  </div>
+                  {authServerError && (
+                    <div className="form-error">{authServerError}</div>
+                  )}
+                  <div className="form-actions">
+                    <button type="submit">
+                      {authMode === 'login' ? 'Hyr' : 'Regjistrohu'}
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() =>
+                        setAuthMode((m) => (m === 'login' ? 'register' : 'login'))
+                      }
+                    >
+                      {authMode === 'login'
+                        ? 'Nuk ke llogari? Regjistrohu'
+                        : 'Ke llogari? Hyr'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+              <div>
+                <h3>Detajet e profilit</h3>
+                {user ? (
+                  <>
+                    <div className="profile-row">
+                      <span className="muted">Emri</span>
+                      <span>{user.name}</span>
+                    </div>
+                    <div className="profile-row">
+                      <span className="muted">Email</span>
+                      <span>{user.email}</span>
+                    </div>
+                    <div className="profile-row">
+                      <span className="muted">Roli</span>
+                      <span>{user.role}</span>
+                    </div>
+                    <div className="profile-row">
+                      <span className="muted">Statusi</span>
+                      <span>{user.accountStatus}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="empty">Nuk ka përdorues aktiv.</div>
+                )}
+              </div>
+            </div>
           </section>
         )}
       </main>
@@ -446,9 +611,127 @@ function App() {
             <span className="muted">Totali</span>
             <div className="price">€{formatPrice(cart.totalPrice)}</div>
           </div>
-          <button disabled={!cart.items || cart.items.length === 0} onClick={handleCheckout}>
+          <button
+            disabled={!cart.items || cart.items.length === 0}
+            onClick={handleCheckout}
+          >
             Finalizo porosinë
           </button>
+        </div>
+        <div className="checkout-form">
+          <h3>Detajet e dërgesës</h3>
+          <div className="field">
+            <label>
+              Emri i marrësit <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              value={checkoutForm.name}
+              onChange={(e) =>
+                setCheckoutForm((f) => ({ ...f, name: e.target.value }))
+              }
+            />
+            {checkoutErrors.name && (
+              <div className="field-error">{checkoutErrors.name}</div>
+            )}
+          </div>
+          <div className="field">
+            <label>
+              Rruga <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              value={checkoutForm.street}
+              onChange={(e) =>
+                setCheckoutForm((f) => ({ ...f, street: e.target.value }))
+              }
+            />
+            {checkoutErrors.street && (
+              <div className="field-error">{checkoutErrors.street}</div>
+            )}
+          </div>
+          <div className="field">
+            <label>
+              Qyteti <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              value={checkoutForm.city}
+              onChange={(e) =>
+                setCheckoutForm((f) => ({ ...f, city: e.target.value }))
+              }
+            />
+            {checkoutErrors.city && (
+              <div className="field-error">{checkoutErrors.city}</div>
+            )}
+          </div>
+          <div className="field-row">
+            <div className="field">
+              <label>Shteti</label>
+              <input
+                type="text"
+                value={checkoutForm.state}
+                onChange={(e) =>
+                  setCheckoutForm((f) => ({ ...f, state: e.target.value }))
+                }
+              />
+            </div>
+            <div className="field">
+              <label>
+                Vendi <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                value={checkoutForm.country}
+                onChange={(e) =>
+                  setCheckoutForm((f) => ({ ...f, country: e.target.value }))
+                }
+              />
+              {checkoutErrors.country && (
+                <div className="field-error">{checkoutErrors.country}</div>
+              )}
+            </div>
+          </div>
+          <div className="field-row">
+            <div className="field">
+              <label>
+                Kodi postar <span className="required">*</span>
+              </label>
+              <input
+                type="text"
+                value={checkoutForm.postalCode}
+                onChange={(e) =>
+                  setCheckoutForm((f) => ({ ...f, postalCode: e.target.value }))
+                }
+              />
+              {checkoutErrors.postalCode && (
+                <div className="field-error">{checkoutErrors.postalCode}</div>
+              )}
+            </div>
+            <div className="field">
+              <label>
+                Metoda e pagesës <span className="required">*</span>
+              </label>
+              <select
+                value={checkoutForm.paymentMethod}
+                onChange={(e) =>
+                  setCheckoutForm((f) => ({
+                    ...f,
+                    paymentMethod: e.target.value,
+                  }))
+                }
+              >
+                <option value="CARD">Kartë</option>
+                <option value="CASH_ON_DELIVERY">Kesh në dorëzim</option>
+              </select>
+              {checkoutErrors.paymentMethod && (
+                <div className="field-error">{checkoutErrors.paymentMethod}</div>
+              )}
+            </div>
+          </div>
+          {checkoutServerError && (
+            <div className="form-error">{checkoutServerError}</div>
+          )}
         </div>
       </aside>
     </div>

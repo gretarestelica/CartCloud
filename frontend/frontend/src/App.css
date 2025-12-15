@@ -220,6 +220,13 @@ main {
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
 .orders-list {
   display: grid;
   gap: 0.8rem;
@@ -261,6 +268,67 @@ main {
 
 .profile-row:last-child {
   border-bottom: none;
+}
+
+.form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.field input,
+.field select {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.field-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+}
+
+.form-error {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .card {
@@ -373,6 +441,17 @@ main {
   align-items: center;
 }
 
+.checkout-form {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.checkout-form h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+}
+
 @media (max-width: 1024px) {
   .topbar {
     grid-template-columns: 1fr;
@@ -382,5 +461,8 @@ main {
   }
   .cart {
     width: 100%;
+  }
+  .profile-grid {
+    grid-template-columns: 1fr;
   }
 }
