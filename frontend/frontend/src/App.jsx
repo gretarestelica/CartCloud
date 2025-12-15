@@ -145,7 +145,7 @@ function App() {
           description: 'Më e butë se reja dhe perfekte për çdo ditë.',
           price: 49.99,
           imageUrl:
-            'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=70',
           category: { name: 'Veshje' },
         },
         {
@@ -154,7 +154,7 @@ function App() {
           description: 'Kafe me stil, direkt nga reja.',
           price: 14.99,
           imageUrl:
-            'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80',
+            'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=70',
           category: { name: 'Aksesore' },
         },
       ]);
@@ -478,15 +478,16 @@ function App() {
               {!productsLoading &&
                 filteredProducts.map((product) => (
                 <article key={product.productId} className="card">
-                  <div
-                    className="image"
-                    style={{
-                      backgroundImage: `url(${
+                  <div className="image">
+                    <img
+                      loading="lazy"
+                      src={
                         product.imageUrl ||
-                        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80'
-                      })`,
-                    }}
-                  />
+                        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=70'
+                      }
+                      alt={product.name || 'Produkt'}
+                    />
+                  </div>
                   <div className="card-body">
                     <div className="card-head">
                       <div>
