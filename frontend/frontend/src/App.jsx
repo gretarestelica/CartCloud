@@ -44,6 +44,10 @@ function App() {
   });
   const [checkoutErrors, setCheckoutErrors] = useState({});
   const [checkoutServerError, setCheckoutServerError] = useState('');
+  const [wishlistModalOpen, setWishlistModalOpen] = useState(false);
+  const [wishlistLink, setWishlistLink] = useState('');
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlistError, setWishlistError] = useState('');
 
   const filteredProducts = useMemo(() => {
     const term = search.toLowerCase();
@@ -275,6 +279,25 @@ function App() {
       setCheckoutServerError(err.message);
     } finally {
       setCartLoading(false);
+    }
+  };
+
+  const handleCreateWishlist = async () => {
+    if (!user || !cart.items || cart.items.length === 0) return;
+    try {
+      setWishlistLoading(true);
+      setWishlistError('');
+      const data = await apiRequest(
+        `/wishlists/from-cart?userId=${user.userId}&days=14`,
+        { method: 'POST' },
+      );
+      const url = `${window.location.origin}?wishlist=${data.token}`;
+      setWishlistLink(url);
+      setWishlistModalOpen(true);
+    } catch (err) {
+      setWishlistError(err.message);
+    } finally {
+      setWishlistLoading(false);
     }
   };
 
@@ -725,12 +748,22 @@ function App() {
             <span className="muted">Totali</span>
             <div className="price">€{formatPrice(cart.totalPrice)}</div>
           </div>
-          <button
-            disabled={!cart.items || cart.items.length === 0}
-            onClick={handleCheckout}
-          >
-            Finalizo porosinë
-          </button>
+          <div className="cart-footer-actions">
+            <button
+              type="button"
+              className="ghost"
+              disabled={!cart.items || cart.items.length === 0 || wishlistLoading}
+              onClick={handleCreateWishlist}
+            >
+              {wishlistLoading ? 'Duke ruajtur...' : 'Ruaj & ndaj wishlist'}
+            </button>
+            <button
+              disabled={!cart.items || cart.items.length === 0}
+              onClick={handleCheckout}
+            >
+              Finalizo porosinë
+            </button>
+          </div>
         </div>
         <div className="checkout-form" aria-label="Detajet e dërgesës">
           <h3>Detajet e dërgesës</h3>
@@ -887,6 +920,90 @@ function App() {
           )}
         </div>
       </aside>
+      {wishlistModalOpen && (
+        <div className="wishlist-overlay" role="dialog" aria-modal="true">
+          <div className="wishlist-modal">
+            <h2>Wishlist u ruajt</h2>
+            <p className="muted">
+              Ndaj këtë link me miqtë – ata do të shohin një pamje të kësaj shporte.
+            </p>
+            <div className="wishlist-preview">
+              {cart.items?.slice(0, 4).map((item) => (
+                <div key={item.id} className="wishlist-row">
+                  <span>{item.product?.name}</span>
+                  <span className="muted">
+                    {item.quantity} x €{formatPrice(item.product?.price || item.price)}
+                  </span>
+                </div>
+              ))}
+              {cart.items && cart.items.length > 4 && (
+                <div className="muted">
+                  + edhe {cart.items.length - 4} produkte të tjera
+                </div>
+              )}
+            </div>
+            <div className="wishlist-link-box">
+              <input
+                type="text"
+                readOnly
+                value={wishlistLink}
+                aria-label="Linku i wishlist-it"
+              />
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => navigator.clipboard?.writeText(wishlistLink)}
+              >
+                Kopjo linkun
+              </button>
+            </div>
+            <div className="wishlist-share-buttons">
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => {
+                  const text = encodeURIComponent(
+                    `Shiko wishlist-in tim në CartCloud: ${wishlistLink}`,
+                  );
+                  window.open(`https://wa.me/?text=${text}`, '_blank');
+                }}
+              >
+                WhatsApp
+              </button>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => {
+                  const text = encodeURIComponent(
+                    'Wishlist në CartCloud',
+                  );
+                  const url = encodeURIComponent(wishlistLink);
+                  window.open(
+                    `https://t.me/share/url?url=${url}&text=${text}`,
+                    '_blank',
+                  );
+                }}
+              >
+                Telegram
+              </button>
+            </div>
+            {wishlistError && (
+              <div className="form-error" role="alert">
+                {wishlistError}
+              </div>
+            )}
+            <div className="form-actions">
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => setWishlistModalOpen(false)}
+              >
+                Mbyll
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
