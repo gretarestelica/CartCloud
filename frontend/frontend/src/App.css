@@ -2,12 +2,12 @@
   min-height: 100vh;
   background: radial-gradient(120% 120% at 10% 20%, #e6f0ff, #f8fbff 45%, #f7f9fc 80%);
   color: #0f172a;
-  padding: 1.5rem 2rem 4rem;
+  padding: 1rem 1.25rem 3rem;
 }
 
 .topbar {
   display: grid;
-  grid-template-columns: 1fr 1.3fr auto;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
   gap: 1rem;
   align-items: center;
   padding: 1rem 1.25rem;
@@ -208,7 +208,7 @@ main {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
 }
 
@@ -464,5 +464,53 @@ main {
   }
   .profile-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 0.75rem 0.75rem 2.5rem;
+  }
+
+  .topbar {
+    padding: 0.75rem;
+  }
+
+  .hero {
+    padding: 1.1rem;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .cart {
+    width: 100%;
+    right: -100%;
+  }
+
+  .cart.open {
+    right: 0;
+  }
+
+  .cart-items {
+    max-height: 50vh;
+  }
+
+  .checkout-form {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 1440px) {
+  .page {
+    max-width: 1440px;
+    margin: 0 auto;
   }
 }
