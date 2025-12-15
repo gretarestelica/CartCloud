@@ -16,11 +16,13 @@ function App() {
   const [categories, setCategories] = useState([]);
   const [cart, setCart] = useState({ items: [], totalPrice: 0 });
   const [lastOrder, setLastOrder] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [showCart, setShowCart] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [activeSection, setActiveSection] = useState('products'); // products | orders | profile
 
   const filteredProducts = useMemo(() => {
     const term = search.toLowerCase();
@@ -44,6 +46,7 @@ function App() {
         await loadProducts();
         await loadCategories();
         await loadCart(ensuredUser);
+        await loadOrders(ensuredUser);
       } catch (err) {
         console.error(err);
         setMessage('Nuk u inicializua frontendi: ' + err.message);
@@ -154,6 +157,17 @@ function App() {
     }
   };
 
+  const loadOrders = async (currentUser = user) => {
+    if (!currentUser) return;
+    try {
+      const data = await apiRequest(`/orders/user/${currentUser.userId}`);
+      setOrders(data);
+    } catch (err) {
+      console.warn('Ska porosi ende', err);
+      setOrders([]);
+    }
+  };
+
   const handleAddToCart = async (productId) => {
     if (!user) return;
     try {
@@ -186,6 +200,7 @@ function App() {
       });
       setLastOrder(order);
       await loadCart(user);
+      await loadOrders(user);
       setMessage('Porosia u finalizua me sukses.');
     } catch (err) {
       setMessage('Checkout dështoi: ' + err.message);
@@ -211,6 +226,26 @@ function App() {
           />
         </div>
         <div className="actions">
+          <div className="tabs">
+            <button
+              className={activeSection === 'products' ? 'ghost tab active' : 'ghost tab'}
+              onClick={() => setActiveSection('products')}
+            >
+              Produkte
+            </button>
+            <button
+              className={activeSection === 'orders' ? 'ghost tab active' : 'ghost tab'}
+              onClick={() => setActiveSection('orders')}
+            >
+              Porositë
+            </button>
+            <button
+              className={activeSection === 'profile' ? 'ghost tab active' : 'ghost tab'}
+              onClick={() => setActiveSection('profile')}
+            >
+              Profili
+            </button>
+          </div>
           <button className="ghost" onClick={() => setShowCart((v) => !v)}>
             Shporta ({cart.items?.length || 0})
           </button>
@@ -254,48 +289,127 @@ function App() {
             )}
           </div>
         </section>
+        {activeSection === 'products' && (
+          <>
+            <section className="filters">
+              {categories.map((c) => (
+                <button
+                  key={c.name || c.categoryName || c.nam}
+                  className={
+                    selectedCategory === (c.name || c.categoryName || c.nam)
+                      ? 'pill active'
+                      : 'pill'
+                  }
+                  onClick={() =>
+                    setSelectedCategory(c.name || c.categoryName || c.nam || 'ALL')
+                  }
+                >
+                  {c.name || c.categoryName || c.nam || 'ALL'}
+                </button>
+              ))}
+            </section>
 
-        <section className="filters">
-          {categories.map((c) => (
-            <button
-              key={c.name || c.categoryName || c.nam}
-              className={
-                selectedCategory === (c.name || c.categoryName || c.nam) ? 'pill active' : 'pill'
-              }
-              onClick={() => setSelectedCategory(c.name || c.categoryName || c.nam || 'ALL')}
-            >
-              {c.name || c.categoryName || c.nam || 'ALL'}
-            </button>
-          ))}
-        </section>
-
-        <section className="grid">
-          {loading && <div className="empty">Duke ngarkuar...</div>}
-          {!loading && filteredProducts.length === 0 && <div className="empty">Asnjë produkt</div>}
-          {filteredProducts.map((product) => (
-            <article key={product.productId} className="card">
-              <div
-                className="image"
-                style={{
-                  backgroundImage: `url(${product.imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80'})`,
-                }}
-              />
-              <div className="card-body">
-                <div className="card-head">
-                  <div>
-                    <h3>{product.name}</h3>
-                    <p className="muted">
-                      {product.category?.name || product.category?.categoryName || product.category?.nam}
-                    </p>
+            <section className="grid">
+              {loading && <div className="empty">Duke ngarkuar...</div>}
+              {!loading && filteredProducts.length === 0 && (
+                <div className="empty">Asnjë produkt</div>
+              )}
+              {filteredProducts.map((product) => (
+                <article key={product.productId} className="card">
+                  <div
+                    className="image"
+                    style={{
+                      backgroundImage: `url(${
+                        product.imageUrl ||
+                        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80'
+                      })`,
+                    }}
+                  />
+                  <div className="card-body">
+                    <div className="card-head">
+                      <div>
+                        <h3>{product.name}</h3>
+                        <p className="muted">
+                          {product.category?.name ||
+                            product.category?.categoryName ||
+                            product.category?.nam}
+                        </p>
+                      </div>
+                      <div className="price">€{formatPrice(product.price)}</div>
+                    </div>
+                    <p className="description">{product.description}</p>
+                    <button onClick={() => handleAddToCart(product.productId)}>
+                      Shto në shportë
+                    </button>
                   </div>
-                  <div className="price">€{formatPrice(product.price)}</div>
+                </article>
+              ))}
+            </section>
+          </>
+        )}
+
+        {activeSection === 'orders' && (
+          <section className="panel">
+            <h2>Porositë e mia</h2>
+            {orders.length === 0 && <div className="empty">Nuk ka porosi ende.</div>}
+            <div className="orders-list">
+              {orders.map((order) => (
+                <article key={order.orderId} className="order-card">
+                  <div className="order-head">
+                    <div>
+                      <div className="muted">
+                        ID: <strong>{order.orderId}</strong>
+                      </div>
+                      <div className="muted">
+                        Status: <strong>{order.status}</strong>
+                      </div>
+                    </div>
+                    <div className="price">€{formatPrice(order.totalAmount)}</div>
+                  </div>
+                  <div className="order-items">
+                    {order.orderItems?.map((oi) => (
+                      <div key={oi.orderItemId} className="order-row">
+                        <span>{oi.product?.name}</span>
+                        <span className="muted">
+                          {oi.quantity} x €{formatPrice(oi.unitPrice)}
+                        </span>
+                        <span>€{formatPrice(oi.lineTotal)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {activeSection === 'profile' && (
+          <section className="panel">
+            <h2>Profili i përdoruesit</h2>
+            {user ? (
+              <>
+                <div className="profile-row">
+                  <span className="muted">Emri</span>
+                  <span>{user.name}</span>
                 </div>
-                <p className="description">{product.description}</p>
-                <button onClick={() => handleAddToCart(product.productId)}>Shto në shportë</button>
-              </div>
-            </article>
-          ))}
-        </section>
+                <div className="profile-row">
+                  <span className="muted">Email</span>
+                  <span>{user.email}</span>
+                </div>
+                <div className="profile-row">
+                  <span className="muted">Roli</span>
+                  <span>{user.role}</span>
+                </div>
+                <div className="profile-row">
+                  <span className="muted">Statusi</span>
+                  <span>{user.accountStatus}</span>
+                </div>
+              </>
+            ) : (
+              <div className="empty">Nuk ka përdorues aktiv.</div>
+            )}
+          </section>
+        )}
       </main>
 
       <aside className={showCart ? 'cart open' : 'cart'}>
