@@ -1,6 +1,7 @@
-package com.cartcloud.cartcloud.model; 
+package com.cartcloud.cartcloud.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import java.util.List;
 
@@ -15,14 +16,21 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
+    @NotBlank(message = "Name is required")
     private String name;
 
+    @Email(message = "Email is not valid")
+    @NotBlank(message = "Email is required")
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
+    @NotBlank
     private String role;          
+    @NotBlank
     private String accountStatus;  
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

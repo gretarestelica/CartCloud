@@ -12,7 +12,6 @@ public class BackendApplication {
         SpringApplication.run(BackendApplication.class, args);
     }
 
-    // CONTROLLER I THJESHTË PËR TEST
     @RestController
     public static class HelloController {
 

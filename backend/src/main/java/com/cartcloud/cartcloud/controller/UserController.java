@@ -2,7 +2,7 @@ package com.cartcloud.cartcloud.controller;
 
 import com.cartcloud.cartcloud.model.User;
 import com.cartcloud.cartcloud.service.UserService;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,48 +14,35 @@ public class UserController {
 
     private final UserService userService;
 
-    
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     
+    @PostMapping("/register")
+    public User register(@Valid @RequestBody User user) {
+        return userService.createUser(user);
+    }
+
     
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
+    public User getById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
-    
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
-    }
-
-    
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+    public User update(@PathVariable Long id,
+                       @RequestBody User user) {
         return userService.updateUser(id, user);
     }
 
-    
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
         userService.deleteUser(id);
-    }
-
-    
-    @PostMapping("/login")
-    public User login(@RequestBody User loginRequest) {
-        return userService.login(loginRequest.getEmail(), loginRequest.getPassword())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
     }
 }

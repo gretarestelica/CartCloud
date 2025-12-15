@@ -21,5 +21,10 @@ public class CategoryController {
     public List<Category> getAll() {
         return categoryRepository.findAll();
     }
+    @PostMapping
+    public Category create(@RequestBody Category category) {
+        return categoryRepository.save(category);
+}
+
 }
 
