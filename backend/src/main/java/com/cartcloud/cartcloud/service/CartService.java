@@ -54,16 +54,19 @@ public class CartService {
             if(existingItemOpt.isPresent()){
               CartItem existing =existingItemOpt.get();
               existing.setQuantity(existing.getQuantity() + quantity);
+              existing.setPrice(product.getPrice());
               cartItemRepository.save(existing);
             }else{
               CartItem newItem = new CartItem();
               newItem.setCart(cart);
               newItem.setProduct(product);
               newItem.setQuantity(quantity);
+              newItem.setPrice(product.getPrice());
               cartItemRepository.save(newItem);
               cart.getItems().add(newItem);
             }
 
+            recalculateTotals(cart);
             return cartRepository.save(cart);
   }
   @Transactional
@@ -78,6 +81,7 @@ public class CartService {
     cartItemRepository.deleteById(cartItemId);
     
     
+    recalculateTotals(cart);
     return cartRepository.save(cart);
   }
 
@@ -92,7 +96,21 @@ public class CartService {
   public void clearCart(Cart cart){
     cartItemRepository.deleteAll(cart.getItems());
     cart.getItems().clear();
+    cart.setTotalPrice(java.math.BigDecimal.ZERO);
     cartRepository.save(cart);
+  }
+
+  private void recalculateTotals(Cart cart) {
+    java.math.BigDecimal total = java.math.BigDecimal.ZERO;
+    for (CartItem item : cart.getItems()) {
+      if (item.getProduct() != null && item.getProduct().getPrice() != null) {
+        java.math.BigDecimal line = item.getProduct().getPrice()
+                .multiply(java.math.BigDecimal.valueOf(item.getQuantity()));
+        total = total.add(line);
+        item.setPrice(item.getProduct().getPrice());
+      }
+    }
+    cart.setTotalPrice(total);
   }
 
 
