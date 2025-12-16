@@ -12,12 +12,5 @@ public class BackendApplication {
         SpringApplication.run(BackendApplication.class, args);
     }
 
-    @RestController
-    public static class HelloController {
-
-        @GetMapping("/hello")
-        public String hello() {
-            return "Hello from BackendApplication!";
-        }
-    }
+ 
 }
