@@ -88,9 +88,15 @@ public class OrderService {
         order.setTotalAmount(total);
         order = orderRepository.save(order);
 
-        Payment payment = paymentService.processPayment(order, paymentMethod);
-        order.setPayment(payment);
-        order.setStatus("COMPLETED");
+       
+    Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setAmount(order.getTotalAmount());  
+        payment.setPaymentMethod(paymentMethod);     
+        payment.setStatus("PENDING");   
+
+        paymentService.processPayment(payment);
+
 
         order = orderRepository.save(order);
 

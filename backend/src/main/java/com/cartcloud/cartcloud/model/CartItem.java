@@ -26,5 +26,5 @@ public class CartItem {
 
     private Integer quantity = 1;
 
-    private BigDecimal price; 
+    private BigDecimal lineTotal; 
 }
