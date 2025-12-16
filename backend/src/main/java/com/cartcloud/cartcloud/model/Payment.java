@@ -18,14 +18,19 @@ public class Payment {
     private Long paymentId;
 
     @OneToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @Column(nullable = false)
     private BigDecimal amount;
 
-    private String method;   
-    private String status;   
+    @Column(nullable = false)
+    private String paymentMethod;   
+
+    @Column(nullable = false)
+    private String status;
 
     private String transactionId;
+
     private LocalDateTime createdAt;
 }
