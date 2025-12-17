@@ -1,7 +1,10 @@
 package com.cartcloud.cartcloud.controller;
 
+import com.cartcloud.cartcloud.controller.dto.AddToCartRequest;
+import com.cartcloud.cartcloud.controller.dto.RemoveFromCartRequest;
 import com.cartcloud.cartcloud.model.Cart;
 import com.cartcloud.cartcloud.service.CartService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,27 +18,28 @@ public class CartController {
         this.cartService = cartService;
     }
 
+    
+    @PostMapping("/add")
+    public Cart addToCart(@Valid @RequestBody AddToCartRequest req) {
+        return cartService.addToCart(req.userId(), req.productId(), req.quantity());
+    }
+
+    
+    @DeleteMapping("/remove")
+    public Cart removeFromCart(@Valid @RequestBody RemoveFromCartRequest req) {
+        return cartService.removeFromCart(req.userId(), req.cartItemId());
+    }
+
+    
     @GetMapping("/{userId}")
     public Cart getCart(@PathVariable Long userId) {
         return cartService.getCartForUser(userId);
     }
 
-    @PostMapping("/{userId}/items")
-    public Cart addItem(@PathVariable Long userId,
-                        @RequestParam Long productId,
-                        @RequestParam(defaultValue = "1") int quantity) {
-        return cartService.addToCart(userId, productId, quantity);
-    }
-
-    @DeleteMapping("/{userId}/items/{cartItemId}")
-    public Cart removeItem(@PathVariable Long userId, @PathVariable Long cartItemId) {
-        return cartService.removeFromCart(userId, cartItemId);
-    }
-
-    @DeleteMapping("/{userId}/clear")
-    public void clear(@PathVariable Long userId) {
+    
+    @PostMapping("/{userId}/clear")
+    public void clearCart(@PathVariable Long userId) {
         Cart cart = cartService.getCartForUser(userId);
         cartService.clearCart(cart);
     }
 }
-
