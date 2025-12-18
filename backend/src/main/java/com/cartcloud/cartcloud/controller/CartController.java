@@ -35,6 +35,11 @@ public class CartController {
     public Cart getCart(@PathVariable Long userId) {
         return cartService.getCartForUser(userId);
     }
+    @GetMapping
+    public Cart getCartByQuery(@RequestParam Long userId) {
+        return cartService.getCartForUser(userId);
+}
+
 
     
     @PostMapping("/{userId}/clear")

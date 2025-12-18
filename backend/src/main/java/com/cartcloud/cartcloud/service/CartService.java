@@ -121,12 +121,17 @@ public class CartService {
     }
 
     public Cart getCartForUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
-        return cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-    }
+    return cartRepository.findByUser(user)
+            .orElseGet(() -> {
+                Cart c = new Cart();
+                c.setUser(user);
+                return cartRepository.save(c);
+            });
+}
+
 
     @Transactional
     public void clearCart(Cart cart) {

@@ -27,5 +27,11 @@ public class OrderController {
     public List<Order> getOrdersForUser(@PathVariable Long userId) {
         return orderService.getOrdersForUser(userId);
     }
+
+    @GetMapping
+    public List<Order> getAllOrders() {
+        return orderService.getAllOrders();
+}
+
 }
 
