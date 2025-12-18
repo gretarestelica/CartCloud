@@ -95,7 +95,7 @@ public class OrderService {
         payment.setPaymentMethod(paymentMethod);     
         payment.setStatus("PENDING");   
 
-        paymentService.processPayment(payment);
+        payment.getPaymentMethod();
 
 
         order = orderRepository.save(order);

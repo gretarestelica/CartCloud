@@ -1,7 +1,8 @@
 package com.cartcloud.cartcloud.service.payment.strategy;
 
-import com.cartcloud.cartcloud.model.Payment;
+import com.cartcloud.cartcloud.model.Order;
 
 public interface PaymentStrategy {
-    void pay(Payment payment);
+    String getMethod();     
+    String pay(Order order); 
 }

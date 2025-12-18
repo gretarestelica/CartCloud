@@ -1,18 +1,20 @@
 package com.cartcloud.cartcloud.service.payment.strategy;
 
-import com.cartcloud.cartcloud.model.Payment;
+import com.cartcloud.cartcloud.model.Order;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Component("CARD")
+@Component
 public class CardPaymentStrategy implements PaymentStrategy {
 
     @Override
-    public void pay(Payment payment) {
-        payment.setStatus("PAID"); 
-        payment.setTransactionId("CARD-" + UUID.randomUUID());
-        payment.setCreatedAt(LocalDateTime.now());
+    public String getMethod() {
+        return "CARD";
+    }
+
+    @Override
+    public String pay(Order order) {
+        return "CARD-" + UUID.randomUUID();
     }
 }

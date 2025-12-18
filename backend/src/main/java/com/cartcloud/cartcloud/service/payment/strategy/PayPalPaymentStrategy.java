@@ -1,18 +1,20 @@
 package com.cartcloud.cartcloud.service.payment.strategy;
 
-import com.cartcloud.cartcloud.model.Payment;
+import com.cartcloud.cartcloud.model.Order;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Component("PAYPAL")
+@Component
 public class PayPalPaymentStrategy implements PaymentStrategy {
 
     @Override
-    public void pay(Payment payment) {
-        payment.setStatus("PAID"); 
-        payment.setTransactionId("PAYPAL-" + UUID.randomUUID());
-        payment.setCreatedAt(LocalDateTime.now());
+    public String getMethod() {
+        return "PAYPAL";
+    }
+
+    @Override
+    public String pay(Order order) {
+        return "PAYPAL-" + UUID.randomUUID();
     }
 }
