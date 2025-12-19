@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8081/api';
 const DEMO_EMAIL = 'demo@cartcloud.test';
 const DEMO_PASSWORD = 'cartcloud';
 
