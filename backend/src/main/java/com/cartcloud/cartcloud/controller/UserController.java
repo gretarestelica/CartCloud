@@ -1,5 +1,7 @@
 package com.cartcloud.cartcloud.controller;
 
+import com.cartcloud.cartcloud.controller.dto.LoginResponse;
+import com.cartcloud.cartcloud.controller.dto.LoginRequest;
 import com.cartcloud.cartcloud.model.User;
 import com.cartcloud.cartcloud.service.UserService;
 import jakarta.validation.Valid;
@@ -16,6 +18,18 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody LoginRequest request) {
+        User user = userService.login(request.getEmail(), request.getPassword());
+
+        return new LoginResponse(
+            user.getUserId(),
+            user.getName(),
+            user.getEmail(),
+            user.getRole()
+        );
     }
 
     

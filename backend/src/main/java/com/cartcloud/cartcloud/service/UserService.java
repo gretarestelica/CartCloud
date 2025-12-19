@@ -85,12 +85,19 @@ public class UserService {
     
     public User login(String email, String rawPassword) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new RuntimeException("Email not found"));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
 
+        if (!"ACTIVE".equalsIgnoreCase(user.getAccountStatus())){
+            throw new RuntimeException("Account is not active");
+        
+        }
+
         return user;
+    
     }
 }
+
